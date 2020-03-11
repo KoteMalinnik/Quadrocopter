@@ -5,7 +5,9 @@ using System.Collections;
 
 public class quadrocopterScript : MonoBehaviour {
 
-	bool stabilizationON = true;
+	public GUIcontroller gui;
+
+	public bool stabilizationON = true;
 
 	public double accelerometr = 0;
 	public double accelerometrThreshold = 0.1;
@@ -29,12 +31,22 @@ public class quadrocopterScript : MonoBehaviour {
 	public double targetRoll;
 	public double targetYaw;
 
-	//PID регуляторы, которые будут стабилизировать углы
-	//каждому углу свой регулятор
 
-	PID pitchPID = new PID (80, 0, 20);
-	PID rollPID = new PID (80, 0, 20);
-	PID yawPID = new PID (50, 0, 80);
+	[Header("pitch/тангаж")]
+	public double p_P = 80;
+	public double p_I = 0;
+	public double p_D = 20;
+
+	[Header("roll/крен")]
+	public double r_P = 80;
+	public double r_I = 0;
+	public double r_D = 20;
+
+	[Header("yaw/рысканье")]
+	public double y_P = 50;
+	public double y_I = 0;
+	public double y_D = 80;
+
 
 	Quaternion prevRotation = new Quaternion (0, 1, 0, 0);
 
@@ -108,7 +120,7 @@ public class quadrocopterScript : MonoBehaviour {
 			//управление тангажем:
 			//на передние двигатели подаем возмущение от регулятора
 			//на задние противоположное возмущение
-			double pitchForce = -pitchPID.Calculate(0, dPitch / 180.0);
+			double pitchForce = -PID.Calculate(p_P, p_I, p_D, 0, dPitch / 180.0);
 			pitchForce = pitchForce > powerLimit ? powerLimit : pitchForce;
 			pitchForce = pitchForce < -powerLimit ? -powerLimit : pitchForce;
 			motor1power += pitchForce;
@@ -118,7 +130,7 @@ public class quadrocopterScript : MonoBehaviour {
 
 			//управление креном:
 			//действуем по аналогии с тангажем, только регулируем боковые двигатели
-			double rollForce = -rollPID.Calculate(0, dRoll / 180.0);
+			double rollForce = -PID.Calculate(r_P, r_I, r_D, 0, dRoll / 180.0);
 			rollForce = rollForce > powerLimit ? powerLimit : rollForce;
 			rollForce = rollForce < -powerLimit ? -powerLimit : rollForce;
 			motor1power += rollForce;
@@ -127,7 +139,7 @@ public class quadrocopterScript : MonoBehaviour {
 			motor4power += rollForce;
 
 			//управление рысканием:
-			double yawForce = yawPID.Calculate(0, dYaw / 180.0);
+			double yawForce = PID.Calculate(y_P, y_I, y_D, 0, dYaw / 180.0);
 			yawForce = yawForce > powerLimit ? powerLimit : yawForce;
 			yawForce = yawForce < -powerLimit ? -powerLimit : yawForce;
 			motor1power += yawForce;
@@ -143,8 +155,10 @@ public class quadrocopterScript : MonoBehaviour {
 	}
 
 
+
 	void inputController()
 	{
+		#if UNITY_EDITOR
 		throttle += Input.GetAxis("throttle")*throttleStep;
 		throttle = throttle > maxThrottle ? maxThrottle : throttle;
 		throttle = throttle < 0 ? 0 : throttle;
@@ -152,6 +166,24 @@ public class quadrocopterScript : MonoBehaviour {
 		targetPitch += Input.GetAxis("pitch") * targetStep;
 		targetYaw += Input.GetAxis("yaw") * targetStep;
 		targetRoll += Input.GetAxis("roll") * targetStep;
+
+
+
+		#else
+		//_____ УПРАВЛЕНИЕ С АНДРОИД
+
+		//изменять тягу слайдером
+		//throttle += ;
+
+
+		Debug.Log($"x: {Input.acceleration.x}\n" +
+		          $"y: {Input.acceleration.y}\n" +
+		          $"z: {Input.acceleration.z}");
+
+		//targetPitch += Input.acceleration.x * targetStep;
+		//targetYaw += Input.acceleration.y * targetStep;
+		//targetRoll += Input.acceleration.z * targetStep;
+		#endif
 	}
 
 	//Вычисления физики в FixedUpdate, а не в Update
@@ -189,6 +221,7 @@ public class quadrocopterScript : MonoBehaviour {
 		if (Input.GetKeyDown(KeyCode.O))
 		{
 			stabilizationON = !stabilizationON;
+			gui.stabilization.isOn = stabilizationON;
 			Debug.Log($"Переключение стабилизации: {stabilizationON}");
 		}
 
