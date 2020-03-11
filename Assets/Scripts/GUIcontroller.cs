@@ -27,16 +27,16 @@ public class GUIcontroller : MonoBehaviour
 
 	void Update()
 	{
-		currentPitch.text = qs.pitch.ToString(".00");
+		currentPitch.text = qs.rotation.pitch.ToString(".00");
 		targetPitch.text = to360Deg(qs.targetPitch);
 
-		currentRoll.text = qs.roll.ToString(".00");
+		currentRoll.text = qs.rotation.roll.ToString(".00");
 		targetRoll.text = to360Deg(qs.targetRoll);
 
-		currentYaw.text = qs.yaw.ToString(".00");
+		currentYaw.text = qs.rotation.yaw.ToString(".00");
 		targetYaw.text = to360Deg(qs.targetYaw);
 
-		hight.text = qs.hight.ToString(".00");
+		hight.text = qs.barometr.hight.ToString(".00");
 
 		throttel.value = (float)qs.throttle;
 	}

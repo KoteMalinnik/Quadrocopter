@@ -4,16 +4,12 @@ using System.Collections;
 
 public class quadrocopterScript : MonoBehaviour {
 
-	public GUIcontroller gui;
+	public GUIcontroller gui { get; private set; }
+	public GPS gps { get; private set; }
+	public Barometr barometr { get; private set; }
+	public RotationSensors rotation { get; private set; }
 
 	public bool stabilizationON = true;
-
-	//фактические параметры
-	public double pitch { get; private set; } //Тангаж
-	public double roll { get; private set; } //Крен
-	public double yaw { get; private set; } //Рыскание
-
-	public double hight { get; private set; } //высота
 
 	[Space]
 	public double throttle; //Тяга
@@ -44,7 +40,6 @@ public class quadrocopterScript : MonoBehaviour {
 	public double y_I = 0;
 	public double y_D = 80;
 
-	Transform frame;
 	motorScript motor1;
 	motorScript motor2;
 	motorScript motor3;
@@ -54,8 +49,13 @@ public class quadrocopterScript : MonoBehaviour {
 
 	void Awake()
 	{
-		rb = GameObject.Find("Frame").GetComponent<Rigidbody>();
-		frame = GameObject.Find("Frame").GetComponent<Transform>();
+		GameObject frame = GameObject.Find("Frame");
+		rb = frame.GetComponent<Rigidbody>();
+		barometr = frame.GetComponent<Barometr>();
+		gps = frame.GetComponent<GPS>();
+		rotation = frame.GetComponent<RotationSensors>();
+
+		gui = GameObject.Find("Canvas").GetComponent<GUIcontroller>();
 
 		motor1 = GameObject.Find("Motor1").GetComponent<motorScript>();
 		motor2 = GameObject.Find("Motor2").GetComponent<motorScript>();
@@ -63,28 +63,10 @@ public class quadrocopterScript : MonoBehaviour {
 		motor4 = GameObject.Find("Motor4").GetComponent<motorScript>();
 	}
 
-	void Update()
-	{
-		hight = frame.position.y;
-
-		readRotation(); //чтение данных с акселерометра квадрокоптера
-	}
-
 	//Вычисления физики в FixedUpdate, а не в Update
 	void FixedUpdate()
 	{
 		if (stabilizationON) stabilize();
-	}
-
-	void readRotation()
-	{
-		//фактическая ориентация нашего квадрокоптера,
-		//в реальном квадрокоптере эти данные необходимо получать
-		//из акселерометра-гироскопа-магнетометра, так же как делает это ваш смартфон
-		Vector3 rot = frame.rotation.eulerAngles;
-		pitch = rot.x;
-		yaw = rot.y;
-		roll = rot.z;
 	}
 
 	//функция стабилизации квадрокоптера
@@ -97,9 +79,9 @@ public class quadrocopterScript : MonoBehaviour {
 		//правильную работу PID регуляторов, так как нет смысла поворачивать на 350
 		//градусов, когда можно повернуть на -10
 
-		double dPitch = targetPitch - pitch;
-		double dRoll = targetRoll - roll;
-		double dYaw = targetYaw - yaw;
+		double dPitch = targetPitch - rotation.pitch;
+		double dRoll = targetRoll - rotation.roll;
+		double dYaw = targetYaw - rotation.yaw;
 
 		dPitch -= Math.Ceiling(Math.Floor(dPitch / 180.0) / 2.0) * 360.0;
 		dRoll -= Math.Ceiling(Math.Floor(dRoll / 180.0) / 2.0) * 360.0;
@@ -122,6 +104,7 @@ public class quadrocopterScript : MonoBehaviour {
 		//на задние противоположное возмущение
 		double pitchForce = pitchPID.Calculate(p_P, p_I, p_D, 0, dPitch / 180.0, stabilizationON);
 		pitchForce = saturation(pitchForce, powerLimit);
+		if(pitchForce>0) Debug.Log($"pitchForce: {pitchForce}, pitch: {rotation.pitch}");
 		motor1power += -pitchForce;
 		motor2power += -pitchForce;
 		motor3power += pitchForce;
@@ -156,7 +139,15 @@ public class quadrocopterScript : MonoBehaviour {
 		current = current > limit ? limit : current;
 		current = current < -limit ? -limit : current;
 
+		current = deadZone(current);
 		return current;
+	}
+
+	//мертвая зона
+	double deadZone(double val)
+	{
+		val = Math.Abs(val) < 0.01 ? 0 : val;
+		return val;
 	}
 
 	//IEnumerator hovering()
