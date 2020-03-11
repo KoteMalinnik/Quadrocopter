@@ -2,18 +2,18 @@
 
 public class PID: MonoBehaviour
 {
-	double currentError;
-	double previousError;
-	double summaryError;
+	float currentError;
+	float previousError;
+	float summaryError;
 
-	public double Calculate(double P, double I, double D, double currentValue, double targetValue, bool stabilizationON)
+	public float Calculate(float P, float I, float D, float currentValue, double targetValue, bool stabilizationON)
 	{
-		double dt = Time.fixedDeltaTime;
+		float dt = Time.fixedDeltaTime;
 
-		currentError = targetValue - currentValue;
+		currentError = (float)targetValue - currentValue;
 		summaryError += currentError;
 
-		double calculatedValue = P * currentError + I * summaryError * dt + D * (currentError - previousError) / dt;
+		float calculatedValue = P * currentError + I * summaryError * dt + D * (currentError - previousError) / dt;
 		previousError = currentError;
 
 		return calculatedValue;

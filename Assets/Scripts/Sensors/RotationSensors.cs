@@ -5,9 +5,9 @@ using UnityEngine;
 public class RotationSensors : MonoBehaviour
 {
 	//Текущие значения
-	public double pitch { get; private set; } //Тангаж
-	public double roll { get; private set; } //Крен
-	public double yaw { get; private set; } //Рыскание
+	public float pitch { get; private set; } //Тангаж
+	public float roll { get; private set; } //Крен
+	public float yaw { get; private set; } //Рыскание
 
 	void Update()
 	{

@@ -6,10 +6,13 @@ using UnityEngine.SceneManagement;
 
 public class GUIcontroller : MonoBehaviour
 {
-	public Slider throttel;
+	public GameObject obj;
+
+	[Header("GUI")]
+
+	public Slider throttle;
 	public Toggle stabilization;
 	public Toggle wind;
-	public Toggle obj;
 
 	public quadrocopterScript qs;
 
@@ -18,47 +21,74 @@ public class GUIcontroller : MonoBehaviour
 	public Text currentYaw, targetYaw;
 
 	public Text hight;
+	public Text throttleText;
+	public Text hSpeed;
+	public Text vSpeed;
+
+	public Dropdown stabilizationType;
 
 	void Awake()
 	{
-		throttel.maxValue = (float)qs.maxThrottle;
-		throttel.value = (float)qs.throttle;
+		throttle.maxValue = qs.maxThrottle;
+		throttle.value = qs.throttle;
 	}
 
 	void Update()
 	{
-		currentPitch.text = qs.rotation.pitch.ToString(".00");
+		throttle.value = qs.throttle;
+
+		currentPitch.text = qs.rotation.pitch.ToString("0.0");
 		targetPitch.text = to360Deg(qs.targetPitch);
 
-		currentRoll.text = qs.rotation.roll.ToString(".00");
+		currentRoll.text = qs.rotation.roll.ToString("0.0");
 		targetRoll.text = to360Deg(qs.targetRoll);
 
-		currentYaw.text = qs.rotation.yaw.ToString(".00");
+		currentYaw.text = qs.rotation.yaw.ToString("0.0");
 		targetYaw.text = to360Deg(qs.targetYaw);
 
-		hight.text = qs.barometr.hight.ToString(".00");
 
-		throttel.value = (float)qs.throttle;
+		hight.text = qs.barometr.hight.ToString("0.0");
+		throttleText.text = qs.throttle.ToString("0.0");
+		vSpeed.text = qs.barometr.verticalSpeed.ToString("0.0");
+		hSpeed.text = qs.gps.horizontalSpeed.ToString("0.0");
 	}
 
 	string to360Deg(double target)
 	{
-		string temp = target >= 0 ? (target - 360 * (int)(target / 360)).ToString(".00") : (360 + target - 360 * (int)(target / 360)).ToString(".00");
+		if (!qs.stabilizationON) return "-";
+
+		string temp = target >= 0 ? (target - 360 * (int)(target / 360)).ToString("0.0") : (360 + target - 360 * (int)(target / 360)).ToString("0.0");
 		return temp;
 	}
 
 	public void changeThrottle()
 	{
-		qs.throttle = throttel.value;
+		qs.throttle = throttle.value;
 	}
 
 	public void switchStabilization()
 	{
-		qs.stabilizationON = stabilization.isOn;
+		qs.switchStabilization();
 	}
 
 	public void Restart()
 	{
 		SceneManager.LoadScene(0);
+	}
+
+	public void Object()
+	{
+		Instantiate(obj, qs.gps.coordinates + new Vector3(0f, 3f, 0), Quaternion.identity);
+	}
+
+	public void Hovering()
+	{
+		qs.hovering();
+	}
+
+	public void changeStabilizationType()
+	{
+		if(stabilizationType.value<1) qs.changeStabilizationTYPE(true);
+		else qs.changeStabilizationTYPE(false);
 	}
 }
