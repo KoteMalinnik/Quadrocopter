@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class ObjectControll : MonoBehaviour
 {
@@ -14,7 +12,7 @@ public class ObjectControll : MonoBehaviour
 		rb = GetComponent<Rigidbody>();
 		quadPos = GameObject.Find("Frame").transform;
 		
-		Invoke("OnCollisionEnter", 0.5f);
+		Invoke("OnCollisionEnter", 1f);
 	}
 
 	void FixedUpdate()
@@ -29,7 +27,7 @@ public class ObjectControll : MonoBehaviour
 
 		if(counter==1)
 		{
-			Debug.Log("collision");
+			Debug.Log("Столкновение");
 			Destroy(gameObject);
 		}
 		

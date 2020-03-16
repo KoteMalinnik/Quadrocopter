@@ -35,7 +35,7 @@ public class GPS : MonoBehaviour
 		lr_dir = gameObject.AddComponent<LineRenderer>();
 
 		lr_dir.startWidth = 0.1f;
-		lr_dir.endWidth = 0.1f;
+		lr_dir.endWidth = 0.0f;
 	}
 
 	void Update()

@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 
+[Serializable]
 public class quadrocopterScript : MonoBehaviour {
 
 	public GUIcontroller gui { get; private set; }
@@ -12,44 +13,46 @@ public class quadrocopterScript : MonoBehaviour {
 	public bool stabilizationON = true;
 	bool horizontalStabilization = true;
 
-	//коэффициенты подобраны почти идеально
-	//Переходный процесс около 10сек
-	[Header("ПИД вертикальной скорости")]
-	public float vs_P = 1f;
-	public float vs_I = 0f;
-	public float vs_D = 0f;
-	public float maxVertDelta = 0.100f;
+	//коэффициенты подобраны идеально
+	//[Header("ПИД вертикальной скорости")]
+	float vs_P { get; } = 0.5f;
+	float vs_I { get; } = 0f;
+	float vs_D { get; } = 0.2f;
+	float maxVertDelta { get; } = 10f;
 
+	//Подобрать точнее
 	[Header("ПИД горизонтальной скорости")]
 	public float hs_P = 10f;
 	public float hs_I = 0f;
-	public float hs_D = 5f;
+	public float hs_D = 0f;
 	public float maxHorAngle = 70f;
 
-	[Header("Тяга")]	public float throttle; //Тяга
-	public float maxThrottle = 25;
-	public float throttleStep = 0.01f;
+	[Header("Тяга")]	public float throttle = 22.41293f; //Тяга нулевой вертикальной скорости
+	public float maxThrottle { get; } = 50;
+	public float throttleStep { get; } = 0.5f;
 
-	public float k_classicInput = 1f; //коэффициент изменения скорости двигателей
+	float k_classicInput { get; } = 1f; //коэффициент изменения скорости двигателей
 
-	[Space]
-	public float targetStep = 0.01f;
+	public float targetStep { get; } = 5f;
 	public float targetPitch { get; set; }
 	public float targetRoll { get; set; }
 	public float targetYaw { get; set; }
 
+	//Подобрать точнее
 	PID pitchPID = new PID();
 	[Header("pitch/тангаж")]
 	public float p_P = 80;
 	public float p_I = 0;
 	public float p_D = 20;
 
+	//Подобрать точнее
 	PID rollPID = new PID();
 	[Header("roll/крен")]
 	public float r_P = 80;
 	public float r_I = 0;
 	public float r_D = 20;
 
+	//Подобрать точнее
 	PID yawPID = new PID();
 	[Header("yaw/рысканье")]
 	public float y_P = 80;
@@ -171,7 +174,7 @@ public class quadrocopterScript : MonoBehaviour {
 
 	public void throttleTOzero()
 	{
-		Debug.Log("Нулевая тяга");
+		Debug.Log("Тяга на ноль");
 		throttle = 0;
 	}
 
@@ -183,7 +186,7 @@ public class quadrocopterScript : MonoBehaviour {
 
 	public void zeroPitchAndRoll()
 	{
-		Debug.Log("Обнуление крена и тангажа");
+		Debug.Log("Выравнивание по нулевым крену и тангажу");
 		targetRoll = 0;
 		targetPitch = 0;
 	}
@@ -216,43 +219,22 @@ public class quadrocopterScript : MonoBehaviour {
 
 	public void hovering()
 	{
-		Debug.Log("Зависание. Нажмите лат. <L> для прекращения");
-		StartCoroutine(stopHorSpeed());
+		Debug.Log("Зависание. Нажмите <L> для отмены");
+		StartCoroutine(SpeedComensation());
 	}
 
-	IEnumerator stopVerSpeed()
+	IEnumerator SpeedComensation()
 	{
-		PID verSpeedPID = new PID();
-		Debug.Log($"Гашение вертикальной скорости");
-
-		while (!Input.GetKeyDown(KeyCode.L))
-		{
-			var deltaThrottel = verSpeedPID.Calculate(vs_P, vs_I, vs_D, barometr.verticalSpeed, 0);
-			deltaThrottel = saturation(deltaThrottel, maxVertDelta);
-
-			throttle += deltaThrottel;
-			throttle = saturation(throttle, maxThrottle);
-			if (throttle < 0) throttle = 0;
-
-			yield return new WaitForFixedUpdate();
-		}
-
-		Debug.Log("Это должно появиться в консоли только после нажатия L. stopVerSpeed");
-		yield return null;
-	}
-
-	IEnumerator stopHorSpeed()
-	{
-		Coroutine vertical = null;
-
-		Debug.Log("Гашение горизонтальной скорости");
+		Debug.Log("Компенсация горизонтальной и вертикальной скорости");
 		PID horSpeedPid = new PID();
+		PID verSpeedPID = new PID();
 
 		zeroPitchAndRoll();
 		targetYaw = 0;
 
 		while (!Input.GetKeyDown(KeyCode.L))
 		{
+			//Горизонтальная компенсация
 			var newPitch = horSpeedPid.Calculate(hs_P, hs_I, hs_D, gps.horSpeedZ, 0f);
 			var newRoll = horSpeedPid.Calculate(hs_P, hs_I, hs_D, gps.horSpeedX, 0f);
 
@@ -262,15 +244,19 @@ public class quadrocopterScript : MonoBehaviour {
 			targetPitch = newPitch;
 			targetRoll = -newRoll;
 
-			if(Mathf.Abs(gps.horSpeedZ) < 0.1f && Mathf.Abs(gps.horSpeedX) < 0.1f && vertical==null)
-			{
-				vertical = StartCoroutine(stopVerSpeed());
-			}
+			//Вертикальная компенсация
+			var deltaThrottel = verSpeedPID.Calculate(vs_P, vs_I, vs_D, barometr.verticalSpeed, 0);
+			deltaThrottel = saturation(deltaThrottel, maxVertDelta);
+
+			throttle += deltaThrottel;
+			throttle = saturation(throttle, maxThrottle);
+			//Устанавливаем в 1, чтобы отсутствие тяги не мешало коптеру стабилизироваться
+			if (throttle < 1) throttle = 1;
 
 			yield return new WaitForFixedUpdate();
 		}
 
-		Debug.Log("Это должно появиться в консоли только после нажатия L. stopHorSpeed");
+		Debug.Log("Это должно появиться в консоли только после нажатия L");
 		yield return null;
 	}
 }

@@ -1,9 +1,7 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
-using System;
 
 public class GUIcontroller : MonoBehaviour
 {
@@ -88,9 +86,16 @@ public class GUIcontroller : MonoBehaviour
 
 	public void Object()
 	{
-		Instantiate(obj, qs.gps.coordinates + new Vector3(0f, 3f, 0), Quaternion.identity);
+		if (slowmoCoroutine == null) slowmoCoroutine = StartCoroutine(slowMo());
 
-		if(slowmoCoroutine == null) slowmoCoroutine = StartCoroutine(slowMo());
+		if(qs.gps.direction.magnitude > 0.1f)
+		{
+			Instantiate(obj, qs.gps.coordinates + qs.gps.direction * 2f, Quaternion.identity);
+		}
+		else
+		{
+			Instantiate(obj, qs.gps.coordinates + new Vector3(1f, 3f, 0), Quaternion.identity);
+		}
 	}
 
 	IEnumerator slowMo()
@@ -99,14 +104,14 @@ public class GUIcontroller : MonoBehaviour
 		Time.timeScale = 0.1f;
 		Time.fixedDeltaTime /= 10.0f;
 
-		Debug.Log("start slowMo");
+		Debug.Log("Объект для столкновения создан. Замедление времени.");
 
 		yield return new WaitForSeconds(10.0f*Time.timeScale);
 
 		Time.timeScale = 1.0f;
 		Time.fixedDeltaTime *= 10.0f;
 		
-		Debug.Log("End slowMo");
+		Debug.Log("Восстановление нормальной скорости течения времени");
 		slowMoPanel.SetActive(false);
 
 		slowmoCoroutine = null;
