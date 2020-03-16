@@ -16,6 +16,7 @@ public class InputControll : MonoBehaviour
 		if (Input.GetKeyDown(KeyCode.Space)) qs.zeroPitchAndRoll();
 		if (Input.GetKeyDown(KeyCode.O)) qs.switchStabilization();
 		if (Input.GetKeyDown(KeyCode.T)) qs.hovering();
+		if (Input.GetKeyDown(KeyCode.L)) StopAllCoroutines();
 	}
 
 	void FixedUpdate()

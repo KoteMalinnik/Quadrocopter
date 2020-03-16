@@ -7,13 +7,14 @@ public class ObjectControll : MonoBehaviour
 	Rigidbody rb;
 	Transform quadPos;
 	public float speed = 1;
+	public static int counter = 0;
 
 	void Awake()
 	{
 		rb = GetComponent<Rigidbody>();
 		quadPos = GameObject.Find("Frame").transform;
-
-		Invoke("OnCollisionEnter", 1f);
+		
+		Invoke("OnCollisionEnter", 0.5f);
 	}
 
 	void FixedUpdate()
@@ -24,7 +25,19 @@ public class ObjectControll : MonoBehaviour
 
 	void OnCollisionEnter()
 	{
-		Destroy(gameObject);
+		counter++;
+
+		if(counter==1)
+		{
+			Debug.Log("collision");
+			Destroy(gameObject);
+		}
+		
+	}
+
+	void OnDestroy()
+	{
+		counter = 0;
 	}
 
 }

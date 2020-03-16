@@ -10,7 +10,8 @@ public class GPS : MonoBehaviour
 	public Vector3 direction { get; private set; }
 
 	public float horizontalSpeed { get; private set; }
-	public Vector2 hSpeedVector { get; private set; }
+	public float horSpeedX { get; private set; }
+	public float horSpeedZ { get; private set;}
 
 	void FixedUpdate()
 	{
@@ -18,11 +19,10 @@ public class GPS : MonoBehaviour
 
 		float dt = Time.fixedDeltaTime;
 
-		var h1 = (coordinates.x - previousCoordinates.x) / dt;
-		var h2 = (coordinates.z - previousCoordinates.z) / dt;
+		horSpeedX = (coordinates.x - previousCoordinates.x) / dt;
+		horSpeedZ = (coordinates.z - previousCoordinates.z) / dt;
 
-		hSpeedVector = new Vector2(h1, h2);
-		horizontalSpeed = Mathf.Sqrt((h1 * h1 + h2 * h2));
+		horizontalSpeed = Mathf.Sqrt((horSpeedX * horSpeedX + horSpeedZ * horSpeedZ));
 
 		direction = coordinates - previousCoordinates;
 
@@ -35,7 +35,7 @@ public class GPS : MonoBehaviour
 		lr_dir = gameObject.AddComponent<LineRenderer>();
 
 		lr_dir.startWidth = 0.1f;
-		lr_dir.endWidth = 0;
+		lr_dir.endWidth = 0.1f;
 	}
 
 	void Update()

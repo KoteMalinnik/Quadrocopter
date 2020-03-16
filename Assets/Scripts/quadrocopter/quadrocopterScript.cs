@@ -12,8 +12,21 @@ public class quadrocopterScript : MonoBehaviour {
 	public bool stabilizationON = true;
 	bool horizontalStabilization = true;
 
-	[Space]
-	public float throttle; //Тяга
+	//коэффициенты подобраны почти идеально
+	//Переходный процесс около 10сек
+	[Header("ПИД вертикальной скорости")]
+	public float vs_P = 1f;
+	public float vs_I = 0f;
+	public float vs_D = 0f;
+	public float maxVertDelta = 0.100f;
+
+	[Header("ПИД горизонтальной скорости")]
+	public float hs_P = 10f;
+	public float hs_I = 0f;
+	public float hs_D = 5f;
+	public float maxHorAngle = 70f;
+
+	[Header("Тяга")]	public float throttle; //Тяга
 	public float maxThrottle = 25;
 	public float throttleStep = 0.01f;
 
@@ -39,7 +52,7 @@ public class quadrocopterScript : MonoBehaviour {
 
 	PID yawPID = new PID();
 	[Header("yaw/рысканье")]
-	public float y_P = 50;
+	public float y_P = 80;
 	public float y_I = 0;
 	public float y_D = 80;
 
@@ -65,19 +78,6 @@ public class quadrocopterScript : MonoBehaviour {
 		motor3 = GameObject.Find("Motor3").GetComponent<motorScript>();
 		motor4 = GameObject.Find("Motor4").GetComponent<motorScript>();
 	}
-
-	//void Update()
-	//{
-	//	gps.hSpeedVector
-	//	var hDir = new Vector3(gps.direction.x, 0, gps.direction.z);
-	//	hDir = hDir.normalized;
-	//	var forwardV = new Vector3(gps.coordinates.x, 0, gps.coordinates.z);
-	//	Vector3.forward
-
-	//	var delta = Vector3.Angle(Vector3.forward, hDir);
-		
-	//	Debug.Log(forwardV);
-	//}
 
 	//Вычисления физики в FixedUpdate, а не в Update
 	void FixedUpdate()
@@ -208,37 +208,69 @@ public class quadrocopterScript : MonoBehaviour {
 			targetYaw = rotation.yaw;
 		}
 
+		StopAllCoroutines();
 		stabilizationON = !stabilizationON;
+		gui.stabilization.isOn = stabilizationON;
 		Debug.Log($"Стабилизация: {stabilizationON}");
 	}
 
 	public void hovering()
 	{
-		Debug.Log("Зависание");
-		//StartCoroutine(hover());
+		Debug.Log("Зависание. Нажмите лат. <L> для прекращения");
+		StartCoroutine(stopHorSpeed());
 	}
 
-	IEnumerator hover()
+	IEnumerator stopVerSpeed()
 	{
-		float dt = Time.fixedDeltaTime;
+		PID verSpeedPID = new PID();
+		Debug.Log($"Гашение вертикальной скорости");
+
+		while (!Input.GetKeyDown(KeyCode.L))
+		{
+			var deltaThrottel = verSpeedPID.Calculate(vs_P, vs_I, vs_D, barometr.verticalSpeed, 0);
+			deltaThrottel = saturation(deltaThrottel, maxVertDelta);
+
+			throttle += deltaThrottel;
+			throttle = saturation(throttle, maxThrottle);
+			if (throttle < 0) throttle = 0;
+
+			yield return new WaitForFixedUpdate();
+		}
+
+		Debug.Log("Это должно появиться в консоли только после нажатия L. stopVerSpeed");
+		yield return null;
+	}
+
+	IEnumerator stopHorSpeed()
+	{
+		Coroutine vertical = null;
+
+		Debug.Log("Гашение горизонтальной скорости");
+		PID horSpeedPid = new PID();
 
 		zeroPitchAndRoll();
+		targetYaw = 0;
 
-		var hDir = new Vector3(gps.direction.x, 0, gps.direction.z);
-		var yawVector = new Vector2(rotation.yaw, 0);
+		while (!Input.GetKeyDown(KeyCode.L))
+		{
+			var newPitch = horSpeedPid.Calculate(hs_P, hs_I, hs_D, gps.horSpeedZ, 0f);
+			var newRoll = horSpeedPid.Calculate(hs_P, hs_I, hs_D, gps.horSpeedX, 0f);
 
-		var delta = Vector3.Angle(Vector3.forward, hDir);
-		Debug.Log(delta);
-		//targetYaw += delta;
+			newPitch = saturation(newPitch, maxHorAngle);
+			newRoll = saturation(newRoll, maxHorAngle);
 
-		//while( gps.horizontalSpeed > 0.1)
-		//{
-			
-		//	yield return new WaitForSeconds(Time.fixedDeltaTime);
-		//}
+			targetPitch = newPitch;
+			targetRoll = -newRoll;
 
-		Debug.Log("Завис");
+			if(Mathf.Abs(gps.horSpeedZ) < 0.1f && Mathf.Abs(gps.horSpeedX) < 0.1f && vertical==null)
+			{
+				vertical = StartCoroutine(stopVerSpeed());
+			}
 
+			yield return new WaitForFixedUpdate();
+		}
+
+		Debug.Log("Это должно появиться в консоли только после нажатия L. stopHorSpeed");
 		yield return null;
 	}
 }

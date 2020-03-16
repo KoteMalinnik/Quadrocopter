@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using System;
 
 public class GUIcontroller : MonoBehaviour
 {
@@ -27,10 +28,14 @@ public class GUIcontroller : MonoBehaviour
 
 	public Dropdown stabilizationType;
 
+	public GameObject slowMoPanel;
+
 	void Awake()
 	{
 		throttle.maxValue = qs.maxThrottle;
 		throttle.value = qs.throttle;
+
+		slowMoPanel.SetActive(false);
 	}
 
 	void Update()
@@ -47,17 +52,18 @@ public class GUIcontroller : MonoBehaviour
 		targetYaw.text = to360Deg(qs.targetYaw);
 
 
-		hight.text = qs.barometr.hight.ToString("0.0");
-		throttleText.text = qs.throttle.ToString("0.0");
-		vSpeed.text = qs.barometr.verticalSpeed.ToString("0.0");
-		hSpeed.text = qs.gps.horizontalSpeed.ToString("0.0");
+		hight.text = qs.barometr.hight.ToString("0.00");
+		throttleText.text = qs.throttle.ToString("0.00");
+		vSpeed.text = qs.barometr.verticalSpeed.ToString("0.00");
+		hSpeed.text = qs.gps.horizontalSpeed.ToString("0.00");
 	}
 
 	string to360Deg(double target)
 	{
 		if (!qs.stabilizationON) return "-";
 
-		string temp = target >= 0 ? (target - 360 * (int)(target / 360)).ToString("0.0") : (360 + target - 360 * (int)(target / 360)).ToString("0.0");
+		string temp = target >= 0 ? (target - 360 * (int)(target / 360)).ToString("0.0")
+									: (360 + target - 360 * (int)(target / 360)).ToString("0.0");
 		return temp;
 	}
 
@@ -73,12 +79,38 @@ public class GUIcontroller : MonoBehaviour
 
 	public void Restart()
 	{
+		Time.timeScale = 1.0f;
+		Time.fixedDeltaTime = 0.02f;
 		SceneManager.LoadScene(0);
 	}
+
+	static Coroutine slowmoCoroutine = null;
 
 	public void Object()
 	{
 		Instantiate(obj, qs.gps.coordinates + new Vector3(0f, 3f, 0), Quaternion.identity);
+
+		if(slowmoCoroutine == null) slowmoCoroutine = StartCoroutine(slowMo());
+	}
+
+	IEnumerator slowMo()
+	{
+		slowMoPanel.SetActive(true);
+		Time.timeScale = 0.1f;
+		Time.fixedDeltaTime /= 10.0f;
+
+		Debug.Log("start slowMo");
+
+		yield return new WaitForSeconds(10.0f*Time.timeScale);
+
+		Time.timeScale = 1.0f;
+		Time.fixedDeltaTime *= 10.0f;
+		
+		Debug.Log("End slowMo");
+		slowMoPanel.SetActive(false);
+
+		slowmoCoroutine = null;
+		yield return null;
 	}
 
 	public void Hovering()

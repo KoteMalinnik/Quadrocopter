@@ -6,7 +6,7 @@ public class PID: MonoBehaviour
 	float previousError;
 	float summaryError;
 
-	public float Calculate(float P, float I, float D, float currentValue, double targetValue, bool stabilizationON)
+	public float Calculate(float P, float I, float D, float currentValue, double targetValue, bool stabilizationON = true)
 	{
 		float dt = Time.fixedDeltaTime;
 
