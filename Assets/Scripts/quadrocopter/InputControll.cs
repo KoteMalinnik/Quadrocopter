@@ -11,17 +11,20 @@ public class InputControll : MonoBehaviour
 
     void Update()
 	{
-		if (Input.GetKeyDown(KeyCode.X)) qs.throttleTOzero();
-		if (Input.GetKeyDown(KeyCode.Z)) qs.throttleTOmax();
-		if (Input.GetKeyDown(KeyCode.Space)) qs.zeroPitchAndRoll();
-		if (Input.GetKeyDown(KeyCode.O)) qs.switchStabilization();
-		if (Input.GetKeyDown(KeyCode.T)) qs.hovering();
-		if (Input.GetKeyDown(KeyCode.L)) StopAllCoroutines();
+		if(quadrocopterScript.compensation == null)
+		{
+			if (Input.GetKeyDown(KeyCode.X)) qs.throttleTOzero();
+			if (Input.GetKeyDown(KeyCode.Z)) qs.throttleTOmax();
+			if (Input.GetKeyDown(KeyCode.Space)) qs.zeroPitchAndRoll();
+			if (Input.GetKeyDown(KeyCode.O)) qs.switchStabilization();
+			if (Input.GetKeyDown(KeyCode.T)) qs.hovering();
+			if (Input.GetKeyDown(KeyCode.L)) StopAllCoroutines();
+		}
 	}
 
 	void FixedUpdate()
 	{
-		inputController();
+		if (quadrocopterScript.compensation == null) inputController();
 	}
 
 	void inputController()

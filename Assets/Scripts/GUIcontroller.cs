@@ -12,6 +12,7 @@ public class GUIcontroller : MonoBehaviour
 	public Slider throttle;
 	public Toggle stabilization;
 	public Toggle wind;
+	public Toggle hovering;
 
 	public quadrocopterScript qs;
 
@@ -30,6 +31,8 @@ public class GUIcontroller : MonoBehaviour
 
 	void Awake()
 	{
+		wind.isOn = false;
+
 		throttle.maxValue = qs.maxThrottle;
 		throttle.value = qs.throttle;
 
@@ -75,6 +78,11 @@ public class GUIcontroller : MonoBehaviour
 		qs.switchStabilization();
 	}
 
+	public void switchWind()
+	{
+		WindController.toggleWind(wind.isOn);
+	}
+
 	public void Restart()
 	{
 		Time.timeScale = 1.0f;
@@ -117,10 +125,19 @@ public class GUIcontroller : MonoBehaviour
 		slowmoCoroutine = null;
 		yield return null;
 	}
-
+	public static bool isHovering { get; private set; } = false;
 	public void Hovering()
 	{
-		qs.hovering();
+		if (hovering.isOn)
+		{
+			isHovering = true;
+			qs.hovering();
+		}
+		else
+		{
+			isHovering = false;
+			Debug.Log("Зависание выкл.");
+		}
 	}
 
 	public void changeStabilizationType()

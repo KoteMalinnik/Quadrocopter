@@ -34,9 +34,9 @@ public class quadrocopterScript : MonoBehaviour {
 	float k_classicInput { get; } = 1f; //коэффициент изменения скорости двигателей
 
 	public float targetStep { get; } = 5f;
-	public float targetPitch { get; set; }
-	public float targetRoll { get; set; }
-	public float targetYaw { get; set; }
+	public float targetPitch { get; set; } = 0;
+	public float targetRoll { get; set; } = 0;
+	public float targetYaw { get; set; } = 0;
 
 	//Подобрать точнее
 	PID pitchPID = new PID();
@@ -217,22 +217,23 @@ public class quadrocopterScript : MonoBehaviour {
 		Debug.Log($"Стабилизация: {stabilizationON}");
 	}
 
+	public static Coroutine compensation { get; private set; } = null;
 	public void hovering()
 	{
 		Debug.Log("Зависание. Нажмите <L> для отмены");
-		StartCoroutine(SpeedComensation());
+		compensation = StartCoroutine(SpeedCompensation());
 	}
 
-	IEnumerator SpeedComensation()
+	IEnumerator SpeedCompensation()
 	{
 		Debug.Log("Компенсация горизонтальной и вертикальной скорости");
-		PID horSpeedPid = new PID();
-		PID verSpeedPID = new PID();
+		var horSpeedPid = new PID();
+		var verSpeedPID = new PID();
 
 		zeroPitchAndRoll();
 		targetYaw = 0;
 
-		while (!Input.GetKeyDown(KeyCode.L))
+		while (!Input.GetKeyDown(KeyCode.L) && GUIcontroller.isHovering)
 		{
 			//Горизонтальная компенсация
 			var newPitch = horSpeedPid.Calculate(hs_P, hs_I, hs_D, gps.horSpeedZ, 0f);
@@ -257,6 +258,7 @@ public class quadrocopterScript : MonoBehaviour {
 		}
 
 		Debug.Log("Это должно появиться в консоли только после нажатия L");
+		compensation = null;
 		yield return null;
 	}
 }
