@@ -6,11 +6,11 @@ public class WindController : MonoBehaviour
 {
 	[SerializeField]
 	float windForce = 1f;
+
 	[SerializeField]
 	Rigidbody target;
 
 	static bool isOn = false;
-
 
 	static Vector3 windDirection = Vector3.zero;
 	public static void toggleWind(bool newIsOn)

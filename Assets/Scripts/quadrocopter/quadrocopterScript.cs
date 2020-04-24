@@ -83,18 +83,20 @@ public class quadrocopterScript : MonoBehaviour {
 	//Вычисления физики в FixedUpdate, а не в Update
 	void FixedUpdate()
 	{
+		float maxAngle = 60;
+		//Ограничение задаваемого тангажа и крена
+		targetPitch = saturation(targetPitch, maxAngle);
+		targetRoll = saturation(targetRoll, maxAngle);
+
+		throttle = saturation(throttle, maxThrottle);
+		if (throttle < 0) throttle = 0;
+
 		//1 и 2 мотор впереди
 		//3 и 4 моторы сзади
 		motor1.power = throttle;
 		motor2.power = throttle;
 		motor3.power = throttle;
 		motor4.power = throttle;
-
-		float maxAngle = 60;
-		//Ограничение задаваемого тангажа и крена
-		targetPitch = saturation(targetPitch, maxAngle);
-		targetRoll = saturation(targetRoll, maxAngle);
-
 
 		if (stabilizationON) stabilize();
 		else classicControll();

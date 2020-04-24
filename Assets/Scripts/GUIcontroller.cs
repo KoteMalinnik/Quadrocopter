@@ -34,6 +34,7 @@ public class GUIcontroller : MonoBehaviour
 		wind.isOn = false;
 
 		throttle.maxValue = qs.maxThrottle;
+		throttle.minValue = -qs.maxThrottle;
 		throttle.value = qs.throttle;
 
 		slowMoPanel.SetActive(false);
@@ -123,6 +124,7 @@ public class GUIcontroller : MonoBehaviour
 		slowmoCoroutine = null;
 		yield return null;
 	}
+
 	public static bool isHovering { get; private set; } = false;
 	public void Hovering()
 	{

@@ -2,10 +2,6 @@
 
 public class CameraController : MonoBehaviour
 {
-	public enum InversionX { Disabled = 0, Enabled = 1 };
-	public enum InversionY { Disabled = 0, Enabled = 1 };
-	public enum Smooth { Disabled = 0, Enabled = 1 };
-
 	[Header("General")]
 	public float sensitivity = 2; // чувствительность мышки
 	public float distance = 5; // расстояние между камерой и игроком

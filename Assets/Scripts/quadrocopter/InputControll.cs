@@ -30,13 +30,9 @@ public class InputControll : MonoBehaviour
 	void inputController()
 	{
 		qs.throttle += Input.GetAxis("throttle") * qs.throttleStep;
-		qs.throttle = qs.throttle > qs.maxThrottle ? qs.maxThrottle : qs.throttle;
-		qs.throttle = qs.throttle < 0 ? 0 : qs.throttle;
 
 		qs.targetPitch += Input.GetAxis("pitch") * qs.targetStep;
 		qs.targetRoll += Input.GetAxis("roll") * qs.targetStep;
-
-
 		qs.targetYaw += Input.GetAxis("yaw") * qs.targetStep;
 
 		//_____ УПРАВЛЕНИЕ АНДРОИД
