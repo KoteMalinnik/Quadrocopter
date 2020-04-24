@@ -3,6 +3,7 @@ using System.Collections;
 
 public class ObjectControll : MonoBehaviour
 {
+	StabilizationTimer timer;
 	Rigidbody rb;
 	Transform quadPos;
 	public float speed = 10;
@@ -11,6 +12,7 @@ public class ObjectControll : MonoBehaviour
 	{
 		rb = GetComponent<Rigidbody>();
 		quadPos = GameObject.Find("Frame").transform;
+		timer = GameObject.Find("Frame").GetComponent<StabilizationTimer>();
 	}
 
 	void Update()
@@ -21,6 +23,8 @@ public class ObjectControll : MonoBehaviour
 
 	void OnCollisionEnter()
 	{
+		timer.startTimer();
 		Debug.Log("Столкновение");
+		Destroy(gameObject);
 	}
 }

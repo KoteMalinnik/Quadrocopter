@@ -119,7 +119,7 @@ public class GUIcontroller : MonoBehaviour
 		
 		Debug.Log("Восстановление нормальной скорости течения времени");
 		slowMoPanel.SetActive(false);
-		Destroy(_obj);
+		if(_obj != null) Destroy(_obj);
 		slowmoCoroutine = null;
 		yield return null;
 	}
