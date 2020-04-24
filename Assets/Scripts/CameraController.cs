@@ -32,20 +32,6 @@ public class CameraController : MonoBehaviour
 		gameObject.tag = "MainCamera";
 	}
 
-	// проверяем, если есть на пути луча, от игрока до камеры, какое-либо препятствие (коллайдер)
-	Vector3 PositionCorrection(Vector3 target, Vector3 position)
-	{
-		RaycastHit hit;
-		Debug.DrawLine(target, position, Color.blue);
-		if (Physics.Linecast(target, position, out hit))
-		{
-			float tempDistance = Vector3.Distance(target, hit.point);
-			Vector3 pos = target - (transform.rotation * Vector3.forward * tempDistance);
-			position = new Vector3(pos.x, position.y, pos.z); // сдвиг позиции в точку контакта
-		}
-		return position;
-	}
-
 	void FixedUpdate()
 	{
 		if (player)
@@ -59,15 +45,13 @@ public class CameraController : MonoBehaviour
 			// определяем точку на указанной дистанции от игрока
 			Vector3 position = player.position - (transform.rotation * Vector3.forward * distance);
 			position = new Vector3(position.x, player.position.y + height, position.z); // корректировка высоты
-			position = PositionCorrection(player.position, position); // находим текущую позицию, относительно игрока
 
 			// поворот камеры по оси Х
 			rotationY += Input.GetAxis("Mouse Y") * sensitivity;
 			rotationY = Mathf.Clamp(rotationY, -Mathf.Abs(minY), Mathf.Abs(maxY));
 			transform.localEulerAngles = new Vector3(rotationY * inversY, transform.localEulerAngles.y, 0);
 
-			if (smooth == Smooth.Disabled) transform.position = position;
-			else transform.position = Vector3.Lerp(transform.position, position, speed * Time.deltaTime);
+			transform.position = position;
 		}
 	}
 }
