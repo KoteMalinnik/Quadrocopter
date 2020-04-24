@@ -95,33 +95,31 @@ public class GUIcontroller : MonoBehaviour
 	public void Object()
 	{
 		if (slowmoCoroutine == null) slowmoCoroutine = StartCoroutine(slowMo());
-
-		if(qs.gps.direction.magnitude > 0.1f)
-		{
-			Instantiate(obj, qs.gps.coordinates + qs.gps.direction * 2f, Quaternion.identity);
-		}
-		else
-		{
-			Instantiate(obj, qs.gps.coordinates + new Vector3(1f, 3f, 0), Quaternion.identity);
-		}
 	}
 
 	IEnumerator slowMo()
 	{
-		slowMoPanel.SetActive(true);
 		Time.timeScale = 0.1f;
 		Time.fixedDeltaTime /= 10.0f;
 
+		slowMoPanel.SetActive(true);
+
+		var spawnPosition = Vector3.one * 5;
+		spawnPosition.x *= Random.Range(0.1f, 0.7f);
+		spawnPosition.y *= Random.Range(0.1f, 0.7f);
+		spawnPosition.z *= Random.Range(0.1f, 0.7f);
+
+		GameObject _obj = Instantiate(obj, qs.gps.coordinates + spawnPosition, Quaternion.identity);
 		Debug.Log("Объект для столкновения создан. Замедление времени.");
 
-		yield return new WaitForSeconds(10.0f*Time.timeScale);
+		yield return new WaitForSeconds(5.0f*Time.timeScale);
 
 		Time.timeScale = 1.0f;
 		Time.fixedDeltaTime *= 10.0f;
 		
 		Debug.Log("Восстановление нормальной скорости течения времени");
 		slowMoPanel.SetActive(false);
-
+		Destroy(_obj);
 		slowmoCoroutine = null;
 		yield return null;
 	}

@@ -1,41 +1,26 @@
 ﻿using UnityEngine;
+using System.Collections;
 
 public class ObjectControll : MonoBehaviour
 {
 	Rigidbody rb;
 	Transform quadPos;
-	public float speed = 1;
-	public static int counter = 0;
+	public float speed = 10;
 
 	void Awake()
 	{
 		rb = GetComponent<Rigidbody>();
 		quadPos = GameObject.Find("Frame").transform;
-		
-		Invoke("OnCollisionEnter", 1f);
 	}
 
-	void FixedUpdate()
+	void Update()
 	{
-		Vector3 direction = quadPos.position - transform.position;
-		rb.AddForce(direction*speed, ForceMode.Impulse);
+		var direction = quadPos.position - transform.position;
+		rb.AddForce(direction * speed, ForceMode.Force);
 	}
 
 	void OnCollisionEnter()
 	{
-		counter++;
-
-		if(counter==1)
-		{
-			Debug.Log("Столкновение");
-			Destroy(gameObject);
-		}
-		
+		Debug.Log("Столкновение");
 	}
-
-	void OnDestroy()
-	{
-		counter = 0;
-	}
-
 }
