@@ -15,16 +15,7 @@ public class CameraController : MonoBehaviour
 	public float minY = 15f; // ограничение углов при наклоне
 	public float maxY = 15f;
 
-	[Header("Invert")] // инверсия осей
-	public InversionX inversionX = InversionX.Disabled;
-	public InversionY inversionY = InversionY.Disabled;
-
-	[Header("Smooth Movement")]
-	public Smooth smooth = Smooth.Enabled;
-	public float speed = 8; // скорость сглаживания
-
 	float rotationY;
-	int inversY, inversX;
 	public Transform player;
 
 	void Start()
@@ -32,15 +23,12 @@ public class CameraController : MonoBehaviour
 		gameObject.tag = "MainCamera";
 	}
 
-	void FixedUpdate()
+	void Update()
 	{
 		if (player)
 		{
-			if (inversionX == InversionX.Disabled) inversX = 1; else inversX = -1;
-			if (inversionY == InversionY.Disabled) inversY = -1; else inversY = 1;
-
 			// вращение камеры вокруг игрока
-			transform.RotateAround(player.position, Vector3.up, Input.GetAxis("Mouse X") * sensitivity * inversX);
+			transform.RotateAround(player.position, Vector3.up, Input.GetAxis("Mouse X") * sensitivity);
 
 			// определяем точку на указанной дистанции от игрока
 			Vector3 position = player.position - (transform.rotation * Vector3.forward * distance);
@@ -49,7 +37,7 @@ public class CameraController : MonoBehaviour
 			// поворот камеры по оси Х
 			rotationY += Input.GetAxis("Mouse Y") * sensitivity;
 			rotationY = Mathf.Clamp(rotationY, -Mathf.Abs(minY), Mathf.Abs(maxY));
-			transform.localEulerAngles = new Vector3(rotationY * inversY, transform.localEulerAngles.y, 0);
+			transform.localEulerAngles = new Vector3(rotationY, transform.localEulerAngles.y, 0);
 
 			transform.position = position;
 		}

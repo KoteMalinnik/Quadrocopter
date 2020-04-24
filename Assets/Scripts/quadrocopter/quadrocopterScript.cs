@@ -31,8 +31,6 @@ public class quadrocopterScript : MonoBehaviour {
 	public float maxThrottle { get; } = 50;
 	public float throttleStep { get; } = 0.5f;
 
-	float k_classicInput { get; } = 1f; //коэффициент изменения скорости двигателей
-
 	public float targetStep { get; } = 5f;
 	public float targetPitch { get; set; } = 0;
 	public float targetRoll { get; set; } = 0;
@@ -92,6 +90,12 @@ public class quadrocopterScript : MonoBehaviour {
 		motor3.power = throttle;
 		motor4.power = throttle;
 
+		float maxAngle = 60;
+		//Ограничение задаваемого тангажа и крена
+		targetPitch = saturation(targetPitch, maxAngle);
+		targetRoll = saturation(targetRoll, maxAngle);
+
+
 		if (stabilizationON) stabilize();
 		else classicControll();
 	}
@@ -106,9 +110,9 @@ public class quadrocopterScript : MonoBehaviour {
 
 	void classicControll()
 	{
-		float pitch = k_classicInput * Input.GetAxis("pitch");
-		float roll = k_classicInput * Input.GetAxis("roll");
-		float yaw = k_classicInput * Input.GetAxis("yaw");
+		float pitch = Input.GetAxis("pitch");
+		float roll = Input.GetAxis("roll");
+		float yaw = Input.GetAxis("yaw");
 
 		motors(-pitch, -pitch, pitch, pitch); 
 		motors(-roll, roll, roll, -roll);

@@ -34,18 +34,14 @@ public class InputControll : MonoBehaviour
 		qs.throttle = qs.throttle < 0 ? 0 : qs.throttle;
 
 		qs.targetPitch += Input.GetAxis("pitch") * qs.targetStep;
-		qs.targetYaw += Input.GetAxis("yaw") * qs.targetStep;
 		qs.targetRoll += Input.GetAxis("roll") * qs.targetStep;
 
-		//_____ УПРАВЛЕНИЕ С АНДРОИД
 
-		//Debug.Log($"x: {Input.acceleration.x}\n" +
-		//          $"y: {Input.acceleration.y}\n" +
-		//          $"z: {Input.acceleration.z}");
+		qs.targetYaw += Input.GetAxis("yaw") * qs.targetStep;
 
+		//_____ УПРАВЛЕНИЕ АНДРОИД
 		//targetPitch += Input.acceleration.x * targetStep;
 		//targetYaw += Input.acceleration.y * targetStep;
 		//targetRoll += Input.acceleration.z * targetStep;
-
 	}
 }
